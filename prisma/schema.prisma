@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+model User {
+  id                Int                  @id @default(autoincrement())
+  firstName         String
+  lastName          String
+  email             String               @unique
+  password          String
+  username          String               @unique
+  uuid              String               @unique
+  signInMethod      String
+  sessionKey        String?              // For web sessions
+  ipAddress         String?
+  createdAt         DateTime             @default(now())
+  tokens            Token[]
+  oneDriveTokens    OneDriveToken[]
+  dropboxTokens     DropboxToken[]       // Relation for Dropbox tokens
+  verificationCodes VerificationCode[]
+  mobileSessions    MobileSession[]      // Relation for mobile sessions
+}
+
+model MobileSession {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  sessionKey  String   // Holds the mobile session key
+  createdAt   DateTime @default(now())
+}
+
+model Token {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  accessToken String
+  refreshToken String
+  email       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model OneDriveToken {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  accessToken String
+  refreshToken String
+  email       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model DropboxToken {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  accessToken String
+  refreshToken String?
+  email       String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model VerificationCode {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
